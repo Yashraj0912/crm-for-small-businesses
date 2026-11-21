@@ -44,7 +44,7 @@ def create_user(body: s.UserCreate, admin: User = Depends(admin_user), db: Sessi
         db.rollback()
         raise HTTPException(409, "Email already registered")
     db.refresh(u)
-    mail.notify_welcome(u, body.password, admin)
+    mail.notify_welcome(u, admin)
     return u
 
 
