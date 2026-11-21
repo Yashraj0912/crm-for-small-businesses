@@ -27,6 +27,36 @@ Optional demo data: after step 4, paste `database/seed.sql` into the Neon SQL Ed
 **Generate `JWT_SECRET` on Windows PowerShell:**
 `$b=New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)`
 
+## AI assistant (optional)
+
+On a customer profile, an **Assistant** panel can summarize the relationship, draft a follow-up email or message, and turn pasted notes into an activity plus tasks. The AI only suggests; nothing is saved or sent until you confirm. Without a key the panel is hidden.
+
+Set these in Vercel (Settings, Environment Variables), then redeploy:
+
+| Variable | Value |
+|---|---|
+| `AI_API_KEY` | key from your own account with an OpenAI-compatible provider |
+| `AI_BASE_URL` | the provider's base URL (for Google Gemini: `https://generativelanguage.googleapis.com/v1beta/openai/`) |
+| `AI_MODEL` | a model name copied from the provider's dashboard |
+| `AI_DAILY_LIMIT` | optional, requests per business per day (default 50) |
+
+Use a key created in your own account. Do not use keys shared by strangers: they are usually leaked or stolen, stop working without warning, and send your customers' data through someone else's account. To use Anthropic instead, set only `ANTHROPIC_API_KEY`.
+
+Customer details (name, notes, recent activity, deals, open tasks) are sent to the AI provider when you press these buttons.
+
+## Email notifications (optional, Gmail)
+
+Emails are sent when someone is assigned a task or lead, becomes the owner of a deal or customer, or is added to the team (the welcome email includes their temporary password). Nothing is sent for self-assignment, and each person can switch assignment emails off in the account menu.
+
+1. On the Gmail account that will send the mail, turn on 2-Step Verification, then create an **App password** (Google Account, Security, App passwords).
+2. In Vercel add `SMTP_USER` (the Gmail address) and `SMTP_PASSWORD` (the app password). Optional: `APP_URL`.
+
+This suits a demo or small team: Gmail limits how many emails an account can send per day and mail comes from that address. Sending happens during the request with an 8 second timeout; a failure is logged and never blocks the save. Reminders for upcoming due dates are not included.
+
+## Updating an existing deployment
+
+Upload all files again, run `database/schema.sql` in the Neon SQL Editor once (it is safe to re-run and adds the AI usage table and the email preference column), then redeploy.
+
 ## Roles
 
 | Action | Administrator | Team member |
