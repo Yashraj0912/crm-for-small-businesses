@@ -55,6 +55,7 @@ class UserOut(Out):
     is_active: bool
     last_login_at: Optional[datetime] = None
     activities_30d: int = 0
+    notify_email: bool = True
 
 
 class TokenOut(BaseModel):
@@ -219,3 +220,7 @@ class ActivityOut(Out):
     user_id: Optional[int] = None
     user_name: Optional[str] = None
     created_at: datetime
+
+
+class PrefsIn(BaseModel):
+    notify_email: bool

@@ -44,6 +44,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(20), server_default="employee")
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    notify_email: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     created_at: Mapped[datetime] = _created()
     org = relationship("Organization", lazy="joined")
     org_name = _name("org")
@@ -147,3 +148,10 @@ class Activity(Base):
     customer = relationship("Customer", lazy="joined")
     user_name = _name("user")
     customer_name = _name("customer")
+
+
+class AiUsage(Base):
+    __tablename__ = "ai_usage"
+    org_id: Mapped[int] = mapped_column(ForeignKey("organizations.id", ondelete="CASCADE"), primary_key=True)
+    day: Mapped[date] = mapped_column(Date, primary_key=True, server_default=func.current_date())
+    calls: Mapped[int] = mapped_column(Integer, server_default="0")

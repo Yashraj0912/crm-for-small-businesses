@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+from . import mail
 from .deps import admin_user, current_user, get_db
 from .models import User
 from .schemas import Page
@@ -29,7 +30,7 @@ def check_refs(db: Session, org_id: int, data: dict, refs: dict):
 
 
 def make_crud(name, Model, In, Out, *, search=(), filters=(), sort=(), refs=None, admin_delete=False,
-              max_page=100, on_create=None, before_save=None, extra_filter=None):
+              max_page=100, on_create=None, before_save=None, extra_filter=None, notify_kind=None, notify_fields=()):
     router = APIRouter(prefix=f"/{name}", tags=[name])
     refs = refs or {}
     PageOut = Page[Out]
@@ -70,7 +71,10 @@ def make_crud(name, Model, In, Out, *, search=(), filters=(), sort=(), refs=None
         obj = Model(**data, org_id=user.org_id)
         db.add(obj)
         db.commit()
-        return get_or_404(db, Model, obj.id, user.org_id)
+        obj = get_or_404(db, Model, obj.id, user.org_id)
+        for f in notify_fields:
+            mail.notify_assigned(db, notify_kind, obj, getattr(obj, f), user)
+        return obj
 
     @router.get("/{item_id}", response_model=Out)
     def get_item(item_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
@@ -83,12 +87,17 @@ def make_crud(name, Model, In, Out, *, search=(), filters=(), sort=(), refs=None
         check_refs(db, user.org_id, data, refs)
         if before_save:
             before_save(data, obj)
+        previous = {f: getattr(obj, f) for f in notify_fields}
         for k, v in data.items():
             setattr(obj, k, v)
         if hasattr(obj, "updated_at"):
             obj.updated_at = datetime.now(timezone.utc)
         db.commit()
-        return get_or_404(db, Model, item_id, user.org_id)
+        obj = get_or_404(db, Model, item_id, user.org_id)
+        for f in notify_fields:
+            if getattr(obj, f) != previous[f]:
+                mail.notify_assigned(db, notify_kind, obj, getattr(obj, f), user)
+        return obj
 
     @router.delete("/{item_id}", status_code=204)
     def delete_item(item_id: int, user: User = Depends(admin_user if admin_delete else current_user),
