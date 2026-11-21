@@ -9,6 +9,7 @@ interface Ctx {
   login: (email: string, password: string) => Promise<void>;
   register: (b: { org_name: string; name: string; email: string; password: string }) => Promise<void>;
   logout: () => void;
+  updateUser: (u: User) => void;
 }
 const AuthCtx = createContext<Ctx>(null as unknown as Ctx);
 export const useAuth = () => useContext(AuthCtx);
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthCtx.Provider
       value={{
-        user, loading, logout,
+        user, loading, logout, updateUser: setUser,
         login: async (email, password) => finish(await api.post('/auth/login', { email, password })),
         register: async (b) => finish(await api.post('/auth/register', b)),
       }}
