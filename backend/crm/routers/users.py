@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .. import schemas as s
+from .. import mail
 from ..crud import get_or_404
 from ..deps import admin_user, current_user, get_db
 from ..models import Activity, User
@@ -43,6 +44,7 @@ def create_user(body: s.UserCreate, admin: User = Depends(admin_user), db: Sessi
         db.rollback()
         raise HTTPException(409, "Email already registered")
     db.refresh(u)
+    mail.notify_welcome(u, body.password, admin)
     return u
 
 

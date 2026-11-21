@@ -18,7 +18,7 @@ customers = make_crud(
     "customers", Customer, s.CustomerIn, s.CustomerOut,
     search=(Customer.name, Customer.email, Customer.company, func.array_to_string(Customer.tags, " ")),
     filters=("category", "owner_id"), sort=(Customer.created_at.desc(),),
-    refs={"owner_id": User}, admin_delete=True,
+    refs={"owner_id": User}, admin_delete=True, notify_kind="customer", notify_fields=("owner_id",),
     on_create=lambda u, d: {"owner_id": d.get("owner_id") or u.id},
     extra_filter=lambda p: [Customer.tags.any(p["tag"])] if p.get("tag") else [],
 )
@@ -32,7 +32,7 @@ def _lead_hook(data, obj):
 leads = make_crud(
     "leads", Lead, s.LeadIn, s.LeadOut,
     search=(Lead.name, Lead.email, Lead.company), filters=("status", "source", "assigned_to"),
-    sort=(Lead.created_at.desc(),), refs={"assigned_to": User}, admin_delete=True, before_save=_lead_hook,
+    sort=(Lead.created_at.desc(),), refs={"assigned_to": User}, admin_delete=True, before_save=_lead_hook, notify_kind="lead", notify_fields=("assigned_to",),
 )
 
 
@@ -48,7 +48,7 @@ def _deal_hook(data, obj):
 deals = make_crud(
     "deals", Deal, s.DealIn, s.DealOut, search=(Deal.title,),
     filters=("stage", "customer_id", "owner_id"), sort=(Deal.created_at.desc(),),
-    refs={"customer_id": Customer, "owner_id": User}, admin_delete=True, max_page=300, before_save=_deal_hook,
+    refs={"customer_id": Customer, "owner_id": User}, admin_delete=True, max_page=300, before_save=_deal_hook, notify_kind="deal", notify_fields=("owner_id",),
 )
 
 
@@ -64,6 +64,7 @@ tasks = make_crud(
     filters=("status", "priority", "assigned_to", "customer_id", "deal_id"),
     sort=(Task.status.desc(), Task.due_date.asc().nulls_last()),
     refs={"assigned_to": User, "customer_id": Customer, "deal_id": Deal}, before_save=_task_hook,
+    notify_kind="task", notify_fields=("assigned_to",),
 )
 
 activities = make_crud(

@@ -57,3 +57,11 @@ def login(body: s.LoginIn, db: Session = Depends(get_db)):
 @router.get("/me", response_model=s.UserOut)
 def me(user: User = Depends(current_user)):
     return user
+
+
+@router.patch("/me", response_model=s.UserOut)
+def update_preferences(body: s.PrefsIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    user.notify_email = body.notify_email
+    db.commit()
+    db.refresh(user)
+    return user
