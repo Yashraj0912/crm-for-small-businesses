@@ -44,7 +44,11 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(20), server_default="employee")
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    notify_email: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    notify_email: Mapped[bool] = mapped_column(
+    Boolean,
+    server_default=text("true"),
+    nullable=False
+)
     created_at: Mapped[datetime] = _created()
     org = relationship("Organization", lazy="joined")
     org_name = _name("org")
