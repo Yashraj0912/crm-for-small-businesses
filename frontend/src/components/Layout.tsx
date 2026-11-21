@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Bell, Contact, LayoutDashboard, ListChecks, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, TrendingUp, UserPlus, Users } from 'lucide-react';
 import { useAuth } from '../auth';
 import { api } from '../lib/api';
-import type { Dashboard } from '../lib/types';
+import type { Dashboard, User } from '../lib/types';
 import { cx, fmtDate, isOverdue } from '../lib/utils';
 import { Avatar, Modal } from './ui';
 
@@ -36,7 +36,7 @@ function Popover({ trigger, children, width = 'w-72' }: { trigger: ReactNode; ch
 }
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const nav = useNavigate();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('clientbook_nav') === '1');
   const [more, setMore] = useState(false);
@@ -105,6 +105,11 @@ export default function Layout() {
                     <div className="text-xs text-ink-500 truncate">{user?.email}</div>
                     <div className="text-xs text-ink-500 mt-0.5">{user?.role === 'admin' ? 'Administrator' : 'Team member'}</div>
                   </div>
+                  <label className="flex items-center gap-2 px-3 py-2 border-b border-ink-100 text-sm cursor-pointer">
+                    <input type="checkbox" className="h-4 w-4 accent-[#1f6f5c]" checked={user?.notify_email !== false}
+                      onChange={async (e) => { try { updateUser(await api.patch<User>('/auth/me', { notify_email: e.target.checked })); } catch { /* keep current setting */ } }} />
+                    Email me about assignments
+                  </label>
                   <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-ink-50"><LogOut size={14} strokeWidth={1.75} />Sign out</button>
                 </div>
               )}
