@@ -107,3 +107,12 @@ create index if not exists ix_activities_org_created on activities(org_id, creat
 create index if not exists ix_activities_customer on activities(customer_id, created_at desc);
 create index if not exists ix_activities_deal on activities(deal_id);
 create index if not exists ix_activities_user on activities(org_id, user_id, created_at);
+
+create table if not exists ai_usage (
+  org_id integer not null references organizations(id) on delete cascade,
+  day date not null default current_date,
+  calls integer not null default 0,
+  primary key (org_id, day)
+);
+
+alter table users add column if not exists notify_email boolean not null default true;
