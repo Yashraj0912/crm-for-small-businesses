@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../auth';
+import AiPanel from '../components/AiPanel';
 import { Async, Badge, Button, FormModal, Panel } from '../components/ui';
 import { useList, useRemove, useSave, useUsers, userOptions } from '../lib/hooks';
 import { activityFields, customerFields } from '../lib/forms';
@@ -47,6 +48,7 @@ export default function CustomerDetail() {
 
             <div className="grid lg:grid-cols-3 gap-5">
               <div className="space-y-5">
+                <AiPanel customerId={cid} />
                 <Panel title="Details">
                   <dl className="space-y-2.5 text-sm">
                     {([['Email', c.email], ['Phone', c.phone], ['Owner', c.owner_name], ['Address', c.address], ['Added', fmtDate(c.created_at)]] as const).map(([k, v]) => (
